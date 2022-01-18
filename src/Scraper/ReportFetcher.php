@@ -136,11 +136,16 @@ class ReportFetcher
         $jsonBody = preg_replace('/;\/\*.*$/', '', ''.$response->getContent());
         $csvExport = json_decode($jsonBody, true);
 
-        if (!isset($csvExport["url"])) {
+        $csvExportURL = null;
+        if (isset($csvExport["url"])) {
+            $csvExportURL = $csvExport["url"];
+        } elseif (isset($csvExport["value"]["url"])) {
+            $csvExportURL = $csvExport["value"]["url"];
+        } else {
             throw new \LogicException("Couldn't export report: ". $response->getContent());
         }
 
-        $downloadURL = "https://app.my.workflowmax.com/reports/" . $csvExport["url"];
+        $downloadURL = "https://app.my.workflowmax.com/reports/" . $csvExportURL;
 
         $csvFilename = tempnam('/tmp', 'report');
         $response = $this->client->request(
